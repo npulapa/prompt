@@ -1,0 +1,846 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Notes Generator — NoteCraft AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+      color: #18233f;
+      background: #f4f7fb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 10%, #e0e7ff 0%, transparent 35%),
+        radial-gradient(circle at 85% 20%, #dcfce7 0%, transparent 35%),
+        #f6f8fc;
+      color: #18233f;
+    }
+
+    .topbar {
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px max(6%, calc((100% - 920px) / 2));
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e2e8f0;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .brand {
+      color: #4338ca;
+      font-size: 22px;
+      font-weight: 800;
+      text-decoration: none;
+      letter-spacing: -0.4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag {
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .container {
+      width: min(920px, 92%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 44px 12px 24px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      color: #4f46e5;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+
+    .hero h1 {
+      margin: 10px 0;
+      font-size: clamp(28px, 4.5vw, 42px);
+      font-weight: 800;
+      line-height: 1.18;
+      letter-spacing: -1px;
+      color: #0f172a;
+    }
+
+    .hero p {
+      color: #475569;
+      line-height: 1.6;
+      max-width: 640px;
+      margin: 0 auto;
+      font-size: 16px;
+    }
+
+    .panel {
+      background: #ffffff;
+      padding: clamp(20px, 4vw, 32px);
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      box-shadow: 0 12px 36px rgba(30, 41, 59, 0.06);
+      margin: 20px 0;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom: 4px;
+      font-size: 21px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 16px 0 8px;
+      color: #1e293b;
+    }
+
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font: inherit;
+      font-size: 15px;
+      color: #1e293b;
+      background: #ffffff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    textarea:focus,
+    select:focus {
+      outline: 3px solid #e0e7ff;
+      border-color: #6366f1;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .btn-primary {
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(110deg, #4f46e5, #6d28d9);
+      color: #ffffff;
+      font: inherit;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 13px 18px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      width: 100%;
+      margin-top: 20px;
+      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.22);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .secondary {
+      border: 1px solid #e0e7ff;
+      border-radius: 10px;
+      background: #eef2ff;
+      color: #4338ca;
+      font: inherit;
+      font-weight: 700;
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .secondary:hover {
+      background: #e0e7ff;
+      transform: translateY(-1px);
+    }
+
+    .chip {
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 9999px;
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .chip:hover {
+      background: #eef2ff;
+      border-color: #c7d2fe;
+      color: #4338ca;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #475569;
+      min-height: 20px;
+    }
+
+    .status.error {
+      color: #dc2626;
+      font-weight: 600;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .note-block {
+      margin-bottom: 22px;
+    }
+
+    .note-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .note-block h3 {
+      color: #334155;
+      font-size: 17px;
+      font-weight: 700;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .note-block p,
+    .note-block li {
+      line-height: 1.7;
+      color: #1e293b;
+      font-size: 15.5px;
+    }
+
+    .note-block ul {
+      padding-left: 20px;
+      margin: 0;
+      list-style-type: disc;
+    }
+
+    .note-block li {
+      margin-bottom: 8px;
+    }
+
+    .summary-box {
+      background: #f8fafc;
+      border-left: 4px solid #4f46e5;
+      padding: 14px 18px;
+      border-radius: 8px;
+    }
+
+    footer {
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+      padding: 24px 0 36px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2.5px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .output-header {
+        flex-direction: column;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="topbar">
+    <a class="brand" href="#top">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4338ca" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+      NoteCraft AI
+    </a>
+    <div class="flex items-center gap-3 flex-wrap">
+      <span class="tag">Instant Structured Study Notes</span>
+      <button
+        id="mode-toggle"
+        type="button"
+        title="Click to switch between Live Gemini AI and Offline Demo Mode"
+        class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition cursor-pointer"
+      >
+        ● Live Gemini AI
+      </button>
+    </div>
+  </header>
+
+  <main id="top" class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <span class="eyebrow">AI-POWERED REVISION PARTNER</span>
+      <h1>Turn any topic into clean study notes.</h1>
+      <p>Enter a subject topic or paste lecture text to generate structured summaries, key takeaways, and exam-ready notes in seconds.</p>
+    </section>
+
+    <!-- Input Panel -->
+    <section class="panel">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <h2>Generate Study Notes</h2>
+        <span id="char-count" class="text-xs font-semibold text-slate-400">0 / 3000</span>
+      </div>
+
+      <!-- Quick Sample Topic Chips -->
+      <div class="mt-3 flex items-center flex-wrap gap-2">
+        <span class="text-xs font-semibold text-slate-500">Try sample:</span>
+        <button type="button" class="chip" data-topic="Normalization in DBMS">Normalization in DBMS</button>
+        <button type="button" class="chip" data-topic="Operating System Deadlocks">Operating System Deadlocks</button>
+        <button type="button" class="chip" data-topic="Binary Search Trees">Binary Search Trees</button>
+      </div>
+
+      <form id="notes-form" novalidate>
+        <label for="topic">Topic or Lecture Text</label>
+        <textarea
+          id="topic"
+          name="topic"
+          rows="4"
+          maxlength="3000"
+          placeholder="e.g., Normalization in DBMS, Operating System Deadlocks, or paste a paragraph from your textbook..."
+          required
+        ></textarea>
+
+        <div class="form-grid">
+          <div>
+            <label for="style">Note Format</label>
+            <select id="style" name="style">
+              <option value="Bullet Points" selected>Bullet Points</option>
+              <option value="Concise Summary">Concise Summary</option>
+              <option value="Detailed Study Guide">Detailed Study Guide</option>
+            </select>
+          </div>
+          <div>
+            <label for="detail-level">Depth Level</label>
+            <select id="detail-level" name="detail_level">
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate" selected>Intermediate</option>
+              <option value="Exam-Focused">Exam-Focused</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="generate-btn" class="btn-primary" type="submit">
+          <span id="btn-spinner" class="spinner hidden" aria-hidden="true"></span>
+          <span id="btn-label">Generate Notes</span>
+        </button>
+      </form>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- Output Reading Card -->
+    <section id="output-section" class="panel hidden" aria-live="polite">
+      <div class="output-header">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="eyebrow">GENERATED NOTES</span>
+            <span id="output-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              AI Generated
+            </span>
+          </div>
+          <h2 id="note-title">Study Notes</h2>
+        </div>
+
+        <div class="action-buttons">
+          <button id="copy-btn" class="secondary" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span id="copy-btn-text">Copy Text</span>
+          </button>
+          <button id="download-btn" class="secondary" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download .txt</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="note-block">
+        <h3>Overview</h3>
+        <p id="note-overview"></p>
+      </div>
+
+      <div class="note-block">
+        <h3>Key Concepts &amp; Takeaways</h3>
+        <ul id="note-points"></ul>
+      </div>
+
+      <div class="note-block summary-box">
+        <h3>Quick Revision Summary</h3>
+        <p id="note-summary"></p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      Developed by Charan (92540118108) • Division 3EN10 • Marwadi University
+    </footer>
+  </main>
+
+  <script>
+    // DOM Element References
+    const form = document.getElementById("notes-form");
+    const topicInput = document.getElementById("topic");
+    const charCount = document.getElementById("char-count");
+    const styleInput = document.getElementById("style");
+    const detailInput = document.getElementById("detail-level");
+    const generateBtn = document.getElementById("generate-btn");
+    const btnSpinner = document.getElementById("btn-spinner");
+    const btnLabel = document.getElementById("btn-label");
+    const statusBox = document.getElementById("status");
+    const outputSection = document.getElementById("output-section");
+    const outputBadge = document.getElementById("output-badge");
+    const noteTitle = document.getElementById("note-title");
+    const noteOverview = document.getElementById("note-overview");
+    const notePoints = document.getElementById("note-points");
+    const noteSummary = document.getElementById("note-summary");
+    const copyBtn = document.getElementById("copy-btn");
+    const copyBtnText = document.getElementById("copy-btn-text");
+    const downloadBtn = document.getElementById("download-btn");
+    const modeToggle = document.getElementById("mode-toggle");
+    const sampleChips = document.querySelectorAll(".chip");
+
+    let currentPlainText = "";
+    let forceDemoMode = false;
+
+    // Gemini API Setup (Canvas runtime injects key when apiKey is empty string)
+    const apiKey = "";
+    const GEMINI_MODEL = "gemini-3-flash-preview";
+
+    // Update character counter as user types
+    function updateCharCount() {
+      const len = topicInput.value.length;
+      charCount.textContent = `${len} / 3000`;
+    }
+    topicInput.addEventListener("input", updateCharCount);
+
+    // Quick sample topic chip clicks
+    sampleChips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        topicInput.value = chip.dataset.topic || "";
+        updateCharCount();
+        topicInput.focus();
+      });
+    });
+
+    // Toggle between Live AI Mode and Offline Demo Mode
+    modeToggle.addEventListener("click", () => {
+      forceDemoMode = !forceDemoMode;
+      if (forceDemoMode) {
+        modeToggle.textContent = "● Offline Demo Mode";
+        modeToggle.className =
+          "text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition cursor-pointer";
+        setStatus("Switched to Offline Demo Mode (instant sample notes).");
+      } else {
+        modeToggle.textContent = "● Live Gemini AI";
+        modeToggle.className =
+          "text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition cursor-pointer";
+        setStatus("Switched to Live Gemini AI mode.");
+      }
+    });
+
+    // Status Helper
+    function setStatus(message, isError = false) {
+      statusBox.textContent = message;
+      statusBox.classList.toggle("error", isError);
+    }
+
+    // Loading State Helper
+    function setLoading(isLoading) {
+      generateBtn.disabled = isLoading;
+      btnSpinner.classList.toggle("hidden", !isLoading);
+      btnLabel.textContent = isLoading ? "Generating Notes..." : "Generate Notes";
+    }
+
+    // Offline Demo Mode Fallback (matching Charan's report sample_notes logic + curated topics)
+    function sampleNotes(topic, style, detailLevel) {
+      const lower = topic.toLowerCase();
+
+      if (lower.includes("normalization")) {
+        return {
+          title: `Study Notes: Normalization in DBMS (${style})`,
+          overview: `Normalization in Database Management Systems (DBMS) is a systematic process of organizing relational tables to minimize data redundancy and eliminate insertion, update, and deletion anomalies (${detailLevel} level).`,
+          key_points: [
+            "First Normal Form (1NF): Ensures every column holds atomic (indivisible) values and each record is uniquely identifiable via a primary key.",
+            "Second Normal Form (2NF): Must satisfy 1NF and eliminate partial dependencies, meaning all non-key attributes depend on the entire primary key.",
+            "Third Normal Form (3NF): Must satisfy 2NF and remove transitive dependencies where non-key attributes depend on other non-key attributes.",
+            "Boyce-Codd Normal Form (BCNF): A stricter version of 3NF where every determinant in a functional dependency must be a candidate key.",
+            "Data Integrity & Anomalies: Prevents inconsistent updates and accidental loss of independent facts when deleting records.",
+            "Exam Tip: Always identify candidate keys and functional dependencies first before decomposing a relation."
+          ],
+          summary:
+            "Normalization decomposes large, redundant tables into smaller, well-structured relations (1NF through BCNF) using functional dependencies to guarantee data consistency and integrity."
+        };
+      }
+
+      if (lower.includes("deadlock")) {
+        return {
+          title: `Study Notes: Operating System Deadlocks (${style})`,
+          overview: `A deadlock is a state in an Operating System where a set of processes are permanently blocked because each process holds a resource and waits for another resource acquired by another process in the set (${detailLevel} level).`,
+          key_points: [
+            "Mutual Exclusion: At least one resource must be held in a non-sharable mode so only one process can use it at a time.",
+            "Hold and Wait: A process is currently holding at least one resource while waiting to acquire additional resources held by others.",
+            "No Preemption: Resources cannot be forcibly taken away from a process; they can only be released voluntarily after task completion.",
+            "Circular Wait: A closed chain of processes exists where each process waits for a resource held by the next process in the chain.",
+            "Deadlock Handling Strategies: Includes Prevention (breaking one of the 4 Coffman conditions), Avoidance (Banker's Algorithm), Detection & Recovery, and Ignorance (Ostrich Algorithm).",
+            "Exam Tip: Memorize all four Coffman conditions—all four must hold simultaneously for a deadlock to occur."
+          ],
+          summary:
+            "Deadlocks occur only when Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait happen together; operating systems handle them via prevention, Banker's avoidance algorithm, or detection."
+        };
+      }
+
+      return {
+        title: `Study Notes: ${topic} (${style})`,
+        overview: `This is an offline demo overview for ${topic} (${detailLevel} depth). Switch to Live Gemini AI mode or check your connection to generate real-time AI-powered study notes.`,
+        key_points: [
+          `Core Definition: Fundamental principles, terminology, and scope of ${topic}.`,
+          "Key Mechanisms: How core components interact within standard academic and engineering workflows.",
+          "Structural Breakdown: Step-by-step decomposition of major sub-concepts and rules.",
+          "Practical Applications: Real-world use cases in software development, systems, and problem solving.",
+          "Exam Tip: Focus on comparing advantages, limitations, and time/space trade-offs during revision."
+        ],
+        summary: `Mastering ${topic} requires understanding its foundational definitions, tracing core mechanisms step by step, and practicing exam-oriented problem scenarios.`
+      };
+    }
+
+    // Fetch with exponential backoff retry logic
+    async function fetchWithRetry(url, options, maxRetries = 3) {
+      let delay = 1000;
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const response = await fetch(url, options);
+        if (response.ok) {
+          return response;
+        }
+        if (attempt === maxRetries || (response.status !== 429 && response.status < 500)) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        delay *= 2;
+      }
+    }
+
+    // Generate structured notes via Gemini API using the report's exact prompt & schema
+    async function generateAINotes(topic, style, detailLevel) {
+      if (forceDemoMode) {
+        await new Promise((r) => setTimeout(r, 350));
+        return { notes: sampleNotes(topic, style, detailLevel), demoMode: true };
+      }
+
+      const prompt = `
+Create structured, student-friendly academic study notes.
+
+Topic or Source Text: ${topic}
+Note Format Style: ${style}
+Depth Level: ${detailLevel}
+
+Return ONLY a valid JSON object with the exact following keys:
+- "title": string (a clear, academic title for the notes)
+- "overview": string (a concise 2-3 sentence introduction to the topic)
+- "key_points": array of strings (5 to 8 clear, informative bullet points covering definitions, concepts, and examples tailored to the requested Note Format Style and Depth Level)
+- "summary": string (a quick exam-revision takeaway paragraph)
+
+Do not include Markdown code fences or extra text outside the JSON object.
+`.trim();
+
+      const payload = {
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ],
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.4,
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              title: { type: "STRING" },
+              overview: { type: "STRING" },
+              key_points: {
+                type: "ARRAY",
+                items: { type: "STRING" }
+              },
+              summary: { type: "STRING" }
+            },
+            required: ["title", "overview", "key_points", "summary"]
+          }
+        }
+      };
+
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+      try {
+        const response = await fetchWithRetry(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        let text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        text = text.trim().replace(/^```(?:json)?\s*|\s*```$/g, "");
+
+        const notesData = JSON.parse(text);
+        if (
+          !notesData ||
+          typeof notesData !== "object" ||
+          !Array.isArray(notesData.key_points) ||
+          notesData.key_points.length === 0
+        ) {
+          throw new Error("Invalid note structure returned by AI.");
+        }
+
+        return { notes: notesData, demoMode: false };
+      } catch (err) {
+        // Automatic fallback to Offline Demo Mode if API is unreachable
+        return {
+          notes: sampleNotes(topic, style, detailLevel),
+          demoMode: true,
+          fallbackUsed: true
+        };
+      }
+    }
+
+    // Render Notes into Output Reading Card
+    function renderNotes(notes, demoMode) {
+      noteTitle.textContent = notes.title || "Study Notes";
+      noteOverview.textContent = notes.overview || "";
+      noteSummary.textContent = notes.summary || "";
+
+      if (demoMode) {
+        outputBadge.textContent = "Offline Demo Mode";
+        outputBadge.className =
+          "text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200";
+      } else {
+        outputBadge.textContent = "Live Gemini AI";
+        outputBadge.className =
+          "text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200";
+      }
+
+      notePoints.replaceChildren();
+      (notes.key_points || []).forEach((point) => {
+        const li = document.createElement("li");
+        li.textContent = point;
+        notePoints.appendChild(li);
+      });
+
+      // Format plain text identically to report's script.js for Copy & Download
+      currentPlainText = [
+        noteTitle.textContent,
+        "=".repeat(noteTitle.textContent.length),
+        "",
+        "OVERVIEW:",
+        noteOverview.textContent,
+        "",
+        "KEY CONCEPTS & TAKEAWAYS:",
+        ...(notes.key_points || []).map((pt) => `- ${pt}`),
+        "",
+        "QUICK REVISION SUMMARY:",
+        noteSummary.textContent
+      ].join("\n");
+    }
+
+    // Form Submit Handler with Validation
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const topic = topicInput.value.trim();
+
+      if (!topic) {
+        setStatus("Please enter a topic or paste study text.", true);
+        topicInput.focus();
+        return;
+      }
+
+      if (topic.length > 3000) {
+        setStatus("Input is too long. Please keep it under 3000 characters.", true);
+        return;
+      }
+
+      const style = styleInput.value;
+      const detailLevel = detailInput.value;
+
+      setLoading(true);
+      setStatus("Generating structured study notes. Please wait...");
+      outputSection.classList.add("hidden");
+
+      try {
+        const { notes, demoMode, fallbackUsed } = await generateAINotes(
+          topic,
+          style,
+          detailLevel
+        );
+
+        renderNotes(notes, demoMode);
+
+        if (fallbackUsed) {
+          setStatus(
+            "Offline Demo Mode active: Live API unavailable, showing structured sample notes."
+          );
+        } else if (demoMode) {
+          setStatus("Offline Demo Mode active: Sample structured notes generated.");
+        } else {
+          setStatus("Study notes generated successfully!");
+        }
+
+        outputSection.classList.remove("hidden");
+        outputSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (error) {
+        setStatus(
+          error.message || "Could not generate notes. Please try again.",
+          true
+        );
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // Copy to Clipboard Handler (with iFrame-safe execCommand fallback)
+    copyBtn.addEventListener("click", async () => {
+      if (!currentPlainText) return;
+
+      let copied = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(currentPlainText);
+          copied = true;
+        }
+      } catch {
+        copied = false;
+      }
+
+      if (!copied) {
+        try {
+          const tempArea = document.createElement("textarea");
+          tempArea.value = currentPlainText;
+          tempArea.style.position = "fixed";
+          tempArea.style.opacity = "0";
+          document.body.appendChild(tempArea);
+          tempArea.select();
+          copied = document.execCommand("copy");
+          document.body.removeChild(tempArea);
+        } catch {
+          copied = false;
+        }
+      }
+
+      if (copied) {
+        const originalText = copyBtnText.textContent;
+        copyBtnText.textContent = "Copied!";
+        setTimeout(() => {
+          copyBtnText.textContent = originalText;
+        }, 2000);
+      } else {
+        setStatus("Failed to copy notes to clipboard.", true);
+      }
+    });
+
+    // Download .txt Handler
+    downloadBtn.addEventListener("click", () => {
+      if (!currentPlainText) return;
+      const blob = new Blob([currentPlainText], {
+        type: "text/plain;charset=utf-8"
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "Study_Notes.txt";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
+```
